@@ -1,35 +1,54 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import YourIPInfo from "./components/YourIPInfo.tsx";
+import styled from 'styled-components';
+import type { IPAdress} from "./interfaces/IPAdress.ts";
+import { useEffect, useState } from 'react';
+
+const PageWrapperDiv=styled.div`
+    height: 100vh;
+    width: 100vw;
+    display: block;
+    box-sizing: border-box;
+    margin: auto;
+    background-color: whitesmoke;
+    font-family: Avenir;
+`;
 
 function App() {
-  const [count, setCount] = useState(0)
+    // Because only one ip is fetched, we use:
+    const [currentIP, setCurrentIP] = useState<IPAdress>();
+    // instead of:
+    // const [currentIP, setCurrentIP] = useState<IPAdress[]>([]);
 
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    useEffect(() => {
+        async function fetchIP(): Promise<void> {
+            // Two API is used from https://apipheny.io/free-api/
+            // fetch User's current IP from IPify
+            const responseIP = await fetch("https://api.ipify.org/?format=json");
+            const { ip } = await responseIP.json();
+            // fetch the IP's information from IPInfo
+            const ipInfoUrl = `https://ipinfo.io/${ip}/geo`
+            const responseInfo = await fetch(ipInfoUrl);
+            const ipInfo = await responseInfo.json();
+            setCurrentIP(ipInfo)
+            // for Debugging use
+            // console.log(ipInfo)
+        }
+
+        fetchIP()
+            .then(() => console.log("Fetched IP and IP info Successfully."))
+            .catch(err => console.log(err));
+    }, []);
+
+    return (
+        <PageWrapperDiv>
+            {currentIP ? (
+                <YourIPInfo ipInfo={currentIP}/>
+            ): (
+                <p>Please wait, Loading IP Information......</p>
+            )}
+
+        </PageWrapperDiv>
+    )
 }
 
 export default App
