@@ -44,6 +44,7 @@ function App() {
             {currentIP ? (
                 <YourIPInfo ipInfo={currentIP}/>
             ): (
+                // In case currentIP is void
                 <p>Please wait, Loading IP Information......</p>
             )}
 
